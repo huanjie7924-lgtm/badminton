@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>🏸 羽球分隊系統</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+
+    font-family:"Microsoft JhengHei",sans-serif;
+
+    background:#f4f4f4;
+
+    margin:0;
+
+    padding:20px;
+
+    max-width:1200px;
+
+    margin:auto;
+}
+
+h1{
+
+    text-align:center;
+
+    color:#333;
+}
+
+.card{
+
+    background:white;
+
+    margin-bottom:15px;
+
+    padding:15px;
+
+    border-radius:10px;
+
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+
+input{
+
+    padding:10px;
+
+    font-size:16px;
+}
+
+button{
+
+    padding:10px 16px;
+
+    font-size:15px;
+
+    cursor:pointer;
+
+    border:none;
+
+    border-radius:6px;
+
+    background:#0d6efd;
+
+    color:white;
+}
+
+button:hover{
+
+    background:#0b5ed7;
+}
+
+.player{
+
+    display:inline-block;
+
+    margin:5px;
+
+    padding:8px 12px;
+
+    background:#dbeafe;
+
+    border-radius:20px;
+}
+
+.delete-btn{
+
+    margin-left:6px;
+
+    border:none;
+
+    background:none;
+
+    color:red;
+
+    cursor:pointer;
+
+    font-size:14px;
+}
+
+.court-card{
+
+    background:white;
+
+    margin-top:25px;
+
+    padding:15px;
+
+    border-radius:10px;
+
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* 羽球場 */
+
+.badminton-court{
+
+    position:relative;
+
+    background:#1f8f50;
+
+    height:350px;
+
+    border-radius:10px;
+
+    overflow:hidden;
+}
+
+/* 外框 */
+
+.outer-line{
+
+    position:absolute;
+
+    top:20px;
+
+    left:20px;
+
+    right:20px;
+
+    bottom:20px;
+
+    border:3px solid white;
+}
+
+/* 球網 */
+
+.net-line{
+
+    position:absolute;
+
+    left:50%;
+
+    top:0;
+
+    height:100%;
+
+    border-left:4px dashed white;
+
+    transform:translateX(-50%);
+}
+
+/* 左隊 */
+
+.left-team{
+
+    position:absolute;
+
+    left:0;
+
+    width:50%;
+
+    height:100%;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:space-evenly;
+
+    align-items:center;
+
+    color:white;
+
+    font-size:32px;
+
+    font-weight:bold;
+}
+
+/* 右隊 */
+
+.right-team{
+
+    position:absolute;
+
+    right:0;
+
+    width:50%;
+
+    height:100%;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:space-evenly;
+
+    align-items:center;
+
+    color:white;
+
+    font-size:32px;
+
+    font-weight:bold;
+}
+
+.court-title{
+
+    margin-bottom:15px;
+}
+
+/* 手機 */
+
+@media(max-width:768px){
+
+    .badminton-court{
+
+        height:240px;
+    }
+
+    .left-team,
+    .right-team{
+
+        font-size:20px;
+    }
+
+    button{
+
+        margin-top:5px;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>🏸 羽球分隊系統</h1>
+
+<div class="card">
+
+    <label>
+        場地數量：
+    </label>
+
+    <input
+        type="number"
+        id="courtCount"
+        min="1"
+        value="2">
+
+</div>
+
+<div class="card">
+
+    <h3>新增球員</h3>
+
+    <input
+        type="text"
+        id="playerName"
+        placeholder="輸入姓名">
+
+    <button onclick="addPlayer()">
+        加入
+    </button>
+
+    <button onclick="clearPlayers()">
+        清空名單
+    </button>
+
+</div>
+
+<div class="card">
+
+    <h3>報名名單</h3>
+
+    <div id="playerList"></div>
+
+</div>
+
+<div class="card">
+
+    <button onclick="generateTeams()">
+        🎲 開始分隊
+    </button>
+</div>
+
+<div id="result"></div>
+
+<script>
+
+let players = [];
+
+function addPlayer(){
+
+    const name =
+        document.getElementById("playerName")
+        .value
+        .trim();
+
+    if(name===""){
+
+        alert("請輸入姓名");
+
+        return;
+    }
+
+    if(players.includes(name)){
+
+        alert("姓名已存在");
+
+        return;
+    }
+
+    players.push(name);
+
+    document.getElementById("playerName").value="";
+
+    renderPlayers();
+}
+
+function removePlayer(index){
+
+    players.splice(index,1);
+
+    renderPlayers();
+}
+
+function clearPlayers(){
+
+    players=[];
+
+    renderPlayers();
+
+    document.getElementById("result").innerHTML="";
+}
+
+function renderPlayers(){
+
+    let html="";
+
+    players.forEach((player,index)=>{
+
+        html += `
+        <span class="player">
+
+            ${player}
+
+            <button
+                class="delete-btn"
+                onclick="removePlayer(${index})">
+
+                ❌
+
+            </button>
+
+        </span>
+        `;
+    });
+
+    document.getElementById("playerList").innerHTML =
+        html;
+}
+
+function shuffle(array){
+
+    for(let i=array.length-1;i>0;i--){
+
+        const j =
+            Math.floor(
+                Math.random()*(i+1)
+            );
+
+        [array[i],array[j]] =
+        [array[j],array[i]];
+    }
+
+    return array;
+}
+
+function generateTeams(){
+
+    const courtCount =
+        parseInt(
+            document.getElementById("courtCount").value
+        );
+
+    const required =
+        courtCount * 4;
+
+    if(players.length < required){
+
+        alert(
+            `至少需要 ${required} 位球員`
+        );
+
+        return;
+    }
+
+    let shuffled = [...players];
+
+    shuffle(shuffled);
+
+    let html = "";
+
+    for(let court=1; court<=courtCount; court++){
+
+        const start =
+            (court-1)*4;
+
+        const team1 = [
+
+            shuffled[start],
+
+            shuffled[start+1]
+
+        ];
+
+        const team2 = [
+
+            shuffled[start+2],
+
+            shuffled[start+3]
+
+        ];
+
+        html += `
+
+        <div class="court-card">
+
+            <h2 class="court-title">
+
+                🏸 第 ${court} 場
+
+            </h2>
+
+            <div class="badminton-court">
+
+                <div class="outer-line"></div>
+
+                <div class="net-line"></div>
+
+                <div class="left-team">
+
+                    <div>${team1[0]}</div>
+
+                    <div>${team1[1]}</div>
+
+                </div>
+
+                <div class="right-team">
+
+                    <div>${team2[0]}</div>
+
+                    <div>${team2[1]}</div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        `;
+    }
+
+    document.getElementById("result").innerHTML =
+        html;
+}
+
+document
+.getElementById("playerName")
+.addEventListener("keypress",function(e){
+
+    if(e.key==="Enter"){
+
+        addPlayer();
+    }
+
+});
+
+</script>
+
+</body>
+</html>
