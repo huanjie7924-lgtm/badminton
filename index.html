@@ -309,6 +309,8 @@ button:hover{
 
 let players = [];
 
+let lastBenchPlayer = null; // 上一輪候補
+
 function addPlayer(){
 
     const name =
@@ -407,17 +409,58 @@ function generateTeams(){
         courtCount * 4;
 
     if(players.length < required){
-
         alert(
             `至少需要 ${required} 位球員`
         );
-
         return;
     }
 
     let shuffled = [...players];
 
-    shuffle(shuffled);
+    let benchPlayer = null;
+
+    // 有多出的人
+    if(players.length > required){
+
+        // 如果上次有候補
+        if(
+            lastBenchPlayer &&
+            players.includes(lastBenchPlayer)
+        ){
+
+            // 候補這次一定上場
+            let candidatePlayers =
+                shuffled.filter(
+                    p => p !== lastBenchPlayer
+                );
+
+            shuffle(candidatePlayers);
+
+            benchPlayer =
+                candidatePlayers[0];
+
+            shuffled =
+                shuffled.filter(
+                    p => p !== benchPlayer
+                );
+
+        }else{
+
+            shuffle(shuffled);
+
+            benchPlayer =
+                shuffled.pop();
+        }
+
+    }else{
+
+        shuffle(shuffled);
+
+        lastBenchPlayer = null;
+    }
+
+    // 記錄本輪候補
+    lastBenchPlayer = benchPlayer;
 
     let html = "";
 
@@ -427,29 +470,20 @@ function generateTeams(){
             (court-1)*4;
 
         const team1 = [
-
             shuffled[start],
-
             shuffled[start+1]
-
         ];
 
         const team2 = [
-
             shuffled[start+2],
-
             shuffled[start+3]
-
         ];
 
         html += `
-
         <div class="court-card">
 
             <h2 class="court-title">
-
                 🏸 第 ${court} 場
-
             </h2>
 
             <div class="badminton-court">
@@ -459,25 +493,36 @@ function generateTeams(){
                 <div class="net-line"></div>
 
                 <div class="left-team">
-
                     <div>${team1[0]}</div>
-
                     <div>${team1[1]}</div>
-
                 </div>
 
                 <div class="right-team">
-
                     <div>${team2[0]}</div>
-
                     <div>${team2[1]}</div>
-
                 </div>
 
             </div>
 
         </div>
+        `;
+    }
 
+    // 顯示候補區
+    if(benchPlayer){
+
+        html += `
+        <div class="court-card">
+            <h2>🪑 本輪候補</h2>
+            <div style="
+                font-size:24px;
+                font-weight:bold;
+                color:#dc3545;
+                text-align:center;
+            ">
+                ${benchPlayer}
+            </div>
+        </div>
         `;
     }
 
