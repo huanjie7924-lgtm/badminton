@@ -1,315 +1,9 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>🏸 羽球分隊系統</title>
-
-<style>
-
-*{
-    box-sizing:border-box;
-}
-
-body{
-
-    font-family:"Microsoft JhengHei",sans-serif;
-
-    background:#f4f4f4;
-
-    margin:0;
-
-    padding:20px;
-
-    max-width:1200px;
-
-    margin:auto;
-}
-
-h1{
-
-    text-align:center;
-
-    color:#333;
-}
-
-.card{
-
-    background:white;
-
-    margin-bottom:15px;
-
-    padding:15px;
-
-    border-radius:10px;
-
-    box-shadow:0 2px 8px rgba(0,0,0,0.1);
-}
-
-input{
-
-    padding:10px;
-
-    font-size:16px;
-}
-
-button{
-
-    padding:10px 16px;
-
-    font-size:15px;
-
-    cursor:pointer;
-
-    border:none;
-
-    border-radius:6px;
-
-    background:#0d6efd;
-
-    color:white;
-}
-
-button:hover{
-
-    background:#0b5ed7;
-}
-
-.player{
-
-    display:inline-block;
-
-    margin:5px;
-
-    padding:8px 12px;
-
-    background:#dbeafe;
-
-    border-radius:20px;
-}
-
-.delete-btn{
-
-    margin-left:6px;
-
-    border:none;
-
-    background:none;
-
-    color:red;
-
-    cursor:pointer;
-
-    font-size:14px;
-}
-
-.court-card{
-
-    background:white;
-
-    margin-top:25px;
-
-    padding:15px;
-
-    border-radius:10px;
-
-    box-shadow:0 2px 8px rgba(0,0,0,0.1);
-}
-
-/* 羽球場 */
-
-.badminton-court{
-
-    position:relative;
-
-    background:#1f8f50;
-
-    height:350px;
-
-    border-radius:10px;
-
-    overflow:hidden;
-}
-
-/* 外框 */
-
-.outer-line{
-
-    position:absolute;
-
-    top:20px;
-
-    left:20px;
-
-    right:20px;
-
-    bottom:20px;
-
-    border:3px solid white;
-}
-
-/* 球網 */
-
-.net-line{
-
-    position:absolute;
-
-    left:50%;
-
-    top:0;
-
-    height:100%;
-
-    border-left:4px dashed white;
-
-    transform:translateX(-50%);
-}
-
-/* 左隊 */
-
-.left-team{
-
-    position:absolute;
-
-    left:0;
-
-    width:50%;
-
-    height:100%;
-
-    display:flex;
-
-    flex-direction:column;
-
-    justify-content:space-evenly;
-
-    align-items:center;
-
-    color:white;
-
-    font-size:32px;
-
-    font-weight:bold;
-}
-
-/* 右隊 */
-
-.right-team{
-
-    position:absolute;
-
-    right:0;
-
-    width:50%;
-
-    height:100%;
-
-    display:flex;
-
-    flex-direction:column;
-
-    justify-content:space-evenly;
-
-    align-items:center;
-
-    color:white;
-
-    font-size:32px;
-
-    font-weight:bold;
-}
-
-.court-title{
-
-    margin-bottom:15px;
-}
-
-/* 手機 */
-
-@media(max-width:768px){
-
-    .badminton-court{
-
-        height:240px;
-    }
-
-    .left-team,
-    .right-team{
-
-        font-size:20px;
-    }
-
-    button{
-
-        margin-top:5px;
-    }
-
-}
-
-</style>
-
-</head>
-
-<body>
-
-<h1>🏸 羽球分隊系統</h1>
-
-<div class="card">
-
-    <label>
-        場地數量：
-    </label>
-
-    <input
-        type="number"
-        id="courtCount"
-        min="1"
-        value="2">
-
-</div>
-
-<div class="card">
-
-    <h3>新增球員</h3>
-
-    <input
-        type="text"
-        id="playerName"
-        placeholder="輸入姓名">
-
-    <button onclick="addPlayer()">
-        加入
-    </button>
-
-    <button onclick="clearPlayers()">
-        清空名單
-    </button>
-
-</div>
-
-<div class="card">
-
-    <h3>報名名單</h3>
-
-    <div id="playerList"></div>
-
-</div>
-
-<div class="card">
-
-    <button onclick="generateTeams()">
-        🎲 開始分隊
-    </button>
-</div>
-
-<div id="result"></div>
-
 <script>
 
 let players = [];
 
-let lastBenchPlayer = null; // 上一輪候補
+// 記錄上一輪候補
+let lastBenchPlayers = [];
 
 function addPlayer(){
 
@@ -319,16 +13,12 @@ function addPlayer(){
         .trim();
 
     if(name===""){
-
         alert("請輸入姓名");
-
         return;
     }
 
     if(players.includes(name)){
-
         alert("姓名已存在");
-
         return;
     }
 
@@ -350,6 +40,8 @@ function clearPlayers(){
 
     players=[];
 
+    lastBenchPlayers=[];
+
     renderPlayers();
 
     document.getElementById("result").innerHTML="";
@@ -363,17 +55,12 @@ function renderPlayers(){
 
         html += `
         <span class="player">
-
             ${player}
-
             <button
                 class="delete-btn"
                 onclick="removePlayer(${index})">
-
                 ❌
-
             </button>
-
         </span>
         `;
     });
@@ -391,7 +78,8 @@ function shuffle(array){
                 Math.random()*(i+1)
             );
 
-        [array[i],array[j]] =
+        [array[i],array[j]]
+            =
         [array[j],array[i]];
     }
 
@@ -409,74 +97,82 @@ function generateTeams(){
         courtCount * 4;
 
     if(players.length < required){
+
         alert(
             `至少需要 ${required} 位球員`
         );
+
         return;
     }
 
-    let shuffled = [...players];
+    let playingPlayers = [];
 
-    let benchPlayer = null;
+    let benchPlayers = [];
 
-    // 有多出的人
-    if(players.length > required){
+    // 人數剛好
+    if(players.length === required){
 
-        // 如果上次有候補
-        if(
-            lastBenchPlayer &&
-            players.includes(lastBenchPlayer)
-        ){
+        playingPlayers = [...players];
 
-            // 候補這次一定上場
-            let candidatePlayers =
-                shuffled.filter(
-                    p => p !== lastBenchPlayer
-                );
+        shuffle(playingPlayers);
 
-            shuffle(candidatePlayers);
+        lastBenchPlayers = [];
 
-            benchPlayer =
-                candidatePlayers[0];
-
-            shuffled =
-                shuffled.filter(
-                    p => p !== benchPlayer
-                );
-
-        }else{
-
-            shuffle(shuffled);
-
-            benchPlayer =
-                shuffled.pop();
-        }
-
-    }else{
-
-        shuffle(shuffled);
-
-        lastBenchPlayer = null;
     }
+    else{
 
-    // 記錄本輪候補
-    lastBenchPlayer = benchPlayer;
+        // 上輪候補優先上場
+        const priorityPlayers =
+            lastBenchPlayers.filter(
+                p => players.includes(p)
+            );
+
+        const otherPlayers =
+            players.filter(
+                p => !priorityPlayers.includes(p)
+            );
+
+        shuffle(otherPlayers);
+
+        const orderedPlayers = [
+            ...priorityPlayers,
+            ...otherPlayers
+        ];
+
+        playingPlayers =
+            orderedPlayers.slice(
+                0,
+                required
+            );
+
+        benchPlayers =
+            orderedPlayers.slice(
+                required
+            );
+
+        lastBenchPlayers =
+            [...benchPlayers];
+    }
 
     let html = "";
 
-    for(let court=1; court<=courtCount; court++){
+    for(
+        let court=1;
+        court<=courtCount;
+        court++
+    ){
 
         const start =
             (court-1)*4;
 
         const team1 = [
-            shuffled[start],
-            shuffled[start+1]
+            playingPlayers[start],
+            playingPlayers[start+1]
         ];
 
         const team2 = [
-            shuffled[start+2],
-            shuffled[start+3]
+            playingPlayers[start+2],
+            playingPlayers[start+3]
         ];
 
         html += `
@@ -508,20 +204,25 @@ function generateTeams(){
         `;
     }
 
-    // 顯示候補區
-    if(benchPlayer){
+    if(benchPlayers.length > 0){
 
         html += `
         <div class="court-card">
-            <h2>🪑 本輪候補</h2>
+
+            <h2>
+                🪑 本輪候補名單
+            </h2>
+
             <div style="
+                text-align:center;
                 font-size:24px;
                 font-weight:bold;
                 color:#dc3545;
-                text-align:center;
+                line-height:1.8;
             ">
-                ${benchPlayer}
+                ${benchPlayers.join("<br>")}
             </div>
+
         </div>
         `;
     }
@@ -532,16 +233,15 @@ function generateTeams(){
 
 document
 .getElementById("playerName")
-.addEventListener("keypress",function(e){
+.addEventListener(
+    "keypress",
+    function(e){
 
-    if(e.key==="Enter"){
+        if(e.key==="Enter"){
 
-        addPlayer();
+            addPlayer();
+        }
     }
-
-});
+);
 
 </script>
-
-</body>
-</html>
